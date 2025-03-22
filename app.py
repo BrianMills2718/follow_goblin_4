@@ -7,6 +7,7 @@ import io
 from typing import Dict, List, Tuple, Optional, Any, Set
 from datetime import datetime
 import time
+import platform
 
 import streamlit as st
 import pandas as pd
@@ -45,8 +46,9 @@ for module in ['api.ai_client', 'data.processing', 'data.communities', 'visualiz
     mod_logger = logging.getLogger(module)
     mod_logger.addHandler(stream_handler)
 
-# Fix asyncio on Windows
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+# Fix asyncio on Windows - only apply on Windows platform
+if platform.system() == 'Windows':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Set page config - must be the first Streamlit command
 st.set_page_config(
