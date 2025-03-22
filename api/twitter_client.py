@@ -101,16 +101,43 @@ class TwitterClient:
             
             url = f"https://{self.api_host}{endpoint}"
             
-            try:
-                async with session.get(url, headers=self.headers) as response:
-                    if response.status != 200:
-                        logger.error(f"Failed to get tweets for {user_id}: {response.status}")
+            # Add exponential backoff for rate limiting
+            max_retries = 3
+            retry_delay = 1.0
+            
+            for retry in range(max_retries):
+                try:
+                    async with session.get(url, headers=self.headers) as response:
+                        if response.status == 429:  # Too Many Requests
+                            # Rate limited, exponential backoff
+                            wait_time = retry_delay * (2 ** retry)
+                            logger.warning(f"Rate limited when getting tweets for {user_id}. Retrying in {wait_time:.1f}s (attempt {retry+1}/{max_retries})")
+                            await asyncio.sleep(wait_time)
+                            continue
+                            
+                        if response.status != 200:
+                            logger.error(f"Failed to get tweets for {user_id}: {response.status}")
+                            if retry < max_retries - 1:
+                                # For other errors, also retry with backoff
+                                wait_time = retry_delay * (2 ** retry)
+                                logger.warning(f"Retrying in {wait_time:.1f}s (attempt {retry+1}/{max_retries})")
+                                await asyncio.sleep(wait_time)
+                                continue
+                            return [], None
+                            
+                        data = await response.text()
+                        return self._parse_tweet_data(data)
+                except Exception as e:
+                    logger.error(f"Error fetching tweets for {user_id}: {str(e)}")
+                    if retry < max_retries - 1:
+                        wait_time = retry_delay * (2 ** retry)
+                        logger.warning(f"Retrying after error in {wait_time:.1f}s (attempt {retry+1}/{max_retries})")
+                        await asyncio.sleep(wait_time)
+                    else:
                         return [], None
-                    data = await response.text()
-                    return self._parse_tweet_data(data)
-            except Exception as e:
-                logger.error(f"Error fetching tweets for {user_id}: {str(e)}")
-                return [], None
+            
+            # If we exhausted all retries
+            return [], None
     
     def _parse_following_response(self, json_str: str) -> Tuple[List[Dict], Optional[str]]:
         """

@@ -102,6 +102,13 @@ def main():
     # Input for username
     input_username = st.text_input("X Username (without @):", value="elonmusk")
     
+    # Reset the data processing complete flag when a new username is entered
+    if "previous_username" in st.session_state and st.session_state["previous_username"] != input_username:
+        st.session_state[StateManager.DATA_PROCESSING_COMPLETE] = False
+    
+    # Store the current username for comparison next time
+    st.session_state["previous_username"] = input_username
+    
     # Sidebar: Display Options
     st.sidebar.header("Display Options")
     
@@ -717,10 +724,10 @@ def main():
                             community_manager.node_communities
                         )
                         
-                        # Force a rerun to update the visualization
+                        # Success message and avoid explicit rerun
                         st.success("Community detection and topic extraction complete!")
-                        time.sleep(1)
-                        st.rerun()
+                        # Flag state update instead of forcing rerun
+                        st.session_state[StateManager.DATA_PROCESSING_COMPLETE] = True
                     else:
                         st.error("Failed to generate community labels. Please try again.")
 

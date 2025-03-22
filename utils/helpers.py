@@ -31,6 +31,7 @@ class StateManager:
     NODE_SPACING = "node_spacing"
     TOPIC_TO_ACCOUNTS = "topic_to_accounts"
     ACCOUNT_TO_TOPICS = "account_to_topics"
+    DATA_PROCESSING_COMPLETE = "data_processing_complete"
     
     @staticmethod
     def initialize() -> None:
@@ -53,6 +54,8 @@ class StateManager:
             st.session_state[StateManager.TOPIC_TO_ACCOUNTS] = None
         if StateManager.ACCOUNT_TO_TOPICS not in st.session_state:
             st.session_state[StateManager.ACCOUNT_TO_TOPICS] = None
+        if StateManager.DATA_PROCESSING_COMPLETE not in st.session_state:
+            st.session_state[StateManager.DATA_PROCESSING_COMPLETE] = False
     
     @staticmethod
     def get_network_data() -> Tuple[Dict[str, Dict], List[Tuple[str, str]]] or None:

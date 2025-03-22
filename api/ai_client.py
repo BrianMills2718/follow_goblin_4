@@ -536,6 +536,9 @@ Return a JSON object with this exact format:
 
 Ensure each topic has at least 2 accounts associated with it. Don't include username '@' symbols in the JSON arrays."""
 
+            # Base delay for exponential backoff (in seconds)
+            base_delay = 1.0
+            
             for retry_count in range(max_retries):
                 try:
                     # Initialize Gemini client
@@ -564,7 +567,11 @@ Ensure each topic has at least 2 accounts associated with it. Don't include user
                         if not json_match:
                             logger.warning("Could not extract JSON from topic extraction response")
                             logger.warning(f"Response text (first 200 chars): {response_text[:200]}...")
-                            # Continue to next retry
+                            # Wait with exponential backoff before next retry
+                            if retry_count < max_retries - 1:
+                                wait_time = base_delay * (2 ** retry_count)
+                                logger.info(f"Waiting {wait_time:.1f}s before next retry")
+                                await asyncio.sleep(wait_time)
                             continue
                         
                         json_str = json_match.group(1)
@@ -586,7 +593,11 @@ Ensure each topic has at least 2 accounts associated with it. Don't include user
                         except json.JSONDecodeError as e:
                             logger.error(f"JSON parsing error after cleaning: {str(e)}")
                             logger.error(f"Cleaned JSON string (first 200 chars): {json_str[:200]}...")
-                            # Continue to next retry
+                            # Wait with exponential backoff before next retry
+                            if retry_count < max_retries - 1:
+                                wait_time = base_delay * (2 ** retry_count)
+                                logger.info(f"Waiting {wait_time:.1f}s before next retry")
+                                await asyncio.sleep(wait_time)
                             continue
                     
                     if parsing_success and data:
@@ -615,7 +626,11 @@ Ensure each topic has at least 2 accounts associated with it. Don't include user
                 
                 except Exception as e:
                     logger.error(f"Error in attempt {retry_count + 1}/{max_retries}: {str(e)}")
-                    # Continue to next retry
+                    # Wait with exponential backoff before next retry
+                    if retry_count < max_retries - 1:
+                        wait_time = base_delay * (2 ** retry_count)
+                        logger.info(f"Waiting {wait_time:.1f}s before next retry")
+                        await asyncio.sleep(wait_time)
                     continue
             
             # If we've exhausted all retries
