@@ -104,7 +104,7 @@ def main():
     
     # Reset the data processing complete flag when a new username is entered
     if "previous_username" in st.session_state and st.session_state["previous_username"] != input_username:
-        st.session_state[StateManager.DATA_PROCESSING_COMPLETE] = False
+        st.session_state["data_processing_complete"] = False
     
     # Store the current username for comparison next time
     st.session_state["previous_username"] = input_username
@@ -726,8 +726,8 @@ def main():
                         
                         # Success message and avoid explicit rerun
                         st.success("Community detection and topic extraction complete!")
-                        # Flag state update instead of forcing rerun
-                        st.session_state[StateManager.DATA_PROCESSING_COMPLETE] = True
+                        # Flag state update instead of forcing rerun - use direct string instead of constant
+                        st.session_state["data_processing_complete"] = True
                     else:
                         st.error("Failed to generate community labels. Please try again.")
 
