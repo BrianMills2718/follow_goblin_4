@@ -245,6 +245,12 @@ class TableVisualizer:
             "Following": [],
             "Description": []
         }
+
+        # Contribution data (incoming/outgoing)
+        table_data["Contributors"] = []            # List accounts that give clout and amount
+        table_data["Total In"] = []                # Total clout received
+        table_data["Distributions"] = []           # List accounts this node gives clout to
+        table_data["Total Out"] = []               # Total clout distributed
         
         # Only add community column if communities exist
         communities_exist = ('node_communities' in st.session_state and st.session_state.node_communities)
@@ -336,7 +342,43 @@ class TableVisualizer:
                             table_data["Tweet Summary"].append(tweet_summary)
                     else:
                         table_data["Tweet Summary"].append("No tweet summary available")
-            
+
+                # ----- Contribution columns -----
+                incoming_outgoing = st.session_state.get("cloutrank_contributions")
+                if incoming_outgoing:
+                    incoming_contribs, outgoing_contribs = incoming_outgoing
+                else:
+                    incoming_contribs, outgoing_contribs = ({}, {})
+
+                # Incoming contributions for this node
+                node_incoming = incoming_contribs.get(node_id, {})
+                # Sort by amount desc
+                sorted_incoming = sorted(node_incoming.items(), key=lambda x: x[1], reverse=True)
+                contributors_list = []
+                total_in = 0.0
+                for src_id, amt in sorted_incoming:
+                    if amt <= 0:
+                        continue
+                    total_in += amt
+                    name = nodes.get(src_id, {}).get("screen_name", src_id)
+                    contributors_list.append(f"@{name}: {amt:.4f}")
+                table_data["Contributors"].append("; ".join(contributors_list) if contributors_list else "")
+                table_data["Total In"].append(f"{total_in:.4f}")
+
+                # Outgoing contributions from this node
+                node_outgoing = outgoing_contribs.get(node_id, {})
+                sorted_outgoing = sorted(node_outgoing.items(), key=lambda x: x[1], reverse=True)
+                distributions_list = []
+                total_out = 0.0
+                for tgt_id, amt in sorted_outgoing:
+                    if amt <= 0:
+                        continue
+                    total_out += amt
+                    name = nodes.get(tgt_id, {}).get("screen_name", tgt_id)
+                    distributions_list.append(f"@{name}: {amt:.4f}")
+                table_data["Distributions"].append("; ".join(distributions_list) if distributions_list else "")
+                table_data["Total Out"].append(f"{total_out:.4f}")
+
             # Convert to DataFrame for better styling
             df = pd.DataFrame(table_data)
             

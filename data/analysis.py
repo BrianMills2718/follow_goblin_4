@@ -13,11 +13,12 @@ logger = logging.getLogger(__name__)
 def compute_in_degree(nodes: Dict[str, Dict], edges: List[Tuple[str, str]]) -> Dict[str, int]:
     """
     Compute in-degree (number of incoming connections) for each node.
+    Edges point from follower to followed, so in-degree = number of followers.
     
     Args:
         nodes: Dictionary mapping node IDs to node data
         edges: List of (source, target) edge tuples
-        
+    
     Returns:
         Dictionary mapping node IDs to in-degree values
     """
@@ -50,6 +51,7 @@ def compute_cloutrank(nodes: Dict[str, Dict],
         Dictionary mapping node IDs to CloutRank scores, or tuple with scores and contributions
     """
     # Construct the directed graph - edges point from follower to followed
+    # Influence flows from follower to followed nodes
     G = nx.DiGraph()
     G.add_nodes_from(nodes.keys())
     
