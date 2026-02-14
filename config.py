@@ -1,6 +1,7 @@
 """
 Configuration settings for the X Network Visualization application.
 """
+import os
 import streamlit as st
 import logging
 
@@ -12,9 +13,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # API Configuration
-RAPIDAPI_KEY = st.secrets.get("RAPIDAPI_KEY", "")
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "")
 RAPIDAPI_HOST = "twitter283.p.rapidapi.com"
-GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 # Network Analysis Parameters
 DEFAULT_CLOUTRANK_DAMPING = 0.85
