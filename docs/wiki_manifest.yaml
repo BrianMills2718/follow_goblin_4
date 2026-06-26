@@ -1,0 +1,17 @@
+---
+doc-role: wiki-manifest
+freshness: 2026-06-25
+---
+
+# Wiki Manifest — Follow Goblin
+
+id: follow_goblin_4
+portfolio_tier: personal
+description: >
+  Follow Goblin
+
+sources:
+  - path: ../README.md
+    role: overview
+  - path: ../CLAUDE.md
+    role: instructions
